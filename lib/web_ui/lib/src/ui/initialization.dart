@@ -10,7 +10,11 @@ Future<void> webOnlyInitializePlatform({
   engine.AssetManager assetManager,
 }) async {
   if (!debugEmulateFlutterTesterEnvironment) {
-    engine.window.locationStrategy = const engine.HashLocationStrategy();
+    if (engine.experimentalUseLocationPath) {
+      engine.window.locationStrategy = engine.initializeLocationPathStrategy();
+    } else {
+      engine.window.locationStrategy = engine.initializeLocationHashStrategy();
+    }
   }
 
   engine.webOnlyInitializeEngine();
@@ -56,7 +60,6 @@ Future<void> webOnlySetAssetManager(engine.AssetManager assetManager) async {
     _fontCollection ??= engine.FontCollection();
     _fontCollection.clear();
   }
-
 
   if (_assetManager != null) {
     if (engine.experimentalUseSkia) {

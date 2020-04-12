@@ -54,7 +54,7 @@ class BrowserHistory {
   }
 
   /// The path of the current location of the user's browser.
-  String get currentPath => _locationStrategy?.path ?? '/';
+  String get currentPath => _locationStrategy?.path() ?? '/';
 
   /// Update the url with the given [routeName].
   void setRouteName(String routeName) {
@@ -142,7 +142,7 @@ class BrowserHistory {
   /// [_isOriginEntry] inside [_popStateListener].
   void _setupOriginEntry(LocationStrategy strategy) {
     assert(strategy != null);
-    strategy.replaceState(_originState, 'origin', '');
+    strategy.replaceState(_originState, 'origin', '', '');
   }
 
   /// This method is used manipulate the Flutter Entry which is always the
@@ -151,13 +151,14 @@ class BrowserHistory {
     LocationStrategy strategy, {
     bool replace = false,
     String path,
+    String queryParams,
   }) {
     assert(strategy != null);
     path ??= currentPath;
     if (replace) {
-      strategy.replaceState(_flutterState, 'flutter', path);
+      strategy.replaceState(_flutterState, 'flutter', path, queryParams);
     } else {
-      strategy.pushState(_flutterState, 'flutter', path);
+      strategy.pushState(_flutterState, 'flutter', path, queryParams);
     }
   }
 

@@ -20,16 +20,19 @@ set strategy(TestLocationStrategy newStrategy) {
 
 void main() {
   test('window.defaultRouteName should not change', () {
-    strategy = TestLocationStrategy.fromEntry(TestHistoryEntry('initial state', null, '/initial'));
+    strategy = TestLocationStrategy.fromEntry(
+        TestHistoryEntry('initial state', null, '/initial', null));
     expect(window.defaultRouteName, '/initial');
 
     // Changing the URL in the address bar later shouldn't affect [window.defaultRouteName].
-    strategy.replaceState(null, null, '/newpath');
+    strategy.replaceState(null, null, '/newpath', null);
     expect(window.defaultRouteName, '/initial');
   });
 
-  test('window.defaultRouteName should reset after navigation platform message', () {
-    strategy = TestLocationStrategy.fromEntry(TestHistoryEntry('initial state', null, '/initial'));
+  test('window.defaultRouteName should reset after navigation platform message',
+      () {
+    strategy = TestLocationStrategy.fromEntry(
+        TestHistoryEntry('initial state', null, '/initial', null));
     // Reading it multiple times should return the same value.
     expect(window.defaultRouteName, '/initial');
     expect(window.defaultRouteName, '/initial');

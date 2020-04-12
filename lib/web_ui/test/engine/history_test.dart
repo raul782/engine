@@ -42,7 +42,7 @@ void main() {
 
     test('basic setup works', () {
       strategy = TestLocationStrategy.fromEntry(
-          TestHistoryEntry('initial state', null, '/initial'));
+          TestHistoryEntry('initial state', null, '/initial', null));
 
       // There should be two entries: origin and flutter.
       expect(strategy.history, hasLength(2));
@@ -65,8 +65,8 @@ void main() {
         skip: browserEngine == BrowserEngine.edge);
 
     test('browser back button pops routes correctly', () async {
-      strategy =
-          TestLocationStrategy.fromEntry(TestHistoryEntry(null, null, '/home'));
+      strategy = TestLocationStrategy.fromEntry(
+          TestHistoryEntry(null, null, '/home', ''));
 
       // Initially, we should be on the flutter entry.
       expect(strategy.history, hasLength(2));
@@ -101,8 +101,8 @@ void main() {
         skip: browserEngine == BrowserEngine.edge);
 
     test('multiple browser back clicks', () async {
-      strategy =
-          TestLocationStrategy.fromEntry(TestHistoryEntry(null, null, '/home'));
+      strategy = TestLocationStrategy.fromEntry(
+          TestHistoryEntry(null, null, '/home', null));
 
       pushRoute('/page1');
       pushRoute('/page2');
@@ -165,10 +165,10 @@ void main() {
             browserEngine == BrowserEngine.webkit);
 
     test('handle user-provided url', () async {
-      strategy =
-          TestLocationStrategy.fromEntry(TestHistoryEntry(null, null, '/home'));
+      strategy = TestLocationStrategy.fromEntry(
+          TestHistoryEntry(null, null, '/home', null));
 
-      await _strategy.simulateUserTypingUrl('/page3');
+      await _strategy.simulateUserTypingUrl('/page3', null);
       // This delay is necessary to wait for [BrowserHistory] because it
       // performs a `back` operation which results in a new event loop.
       await Future<void>.delayed(Duration.zero);
@@ -206,10 +206,10 @@ void main() {
         skip: browserEngine == BrowserEngine.edge);
 
     test('user types unknown url', () async {
-      strategy =
-          TestLocationStrategy.fromEntry(TestHistoryEntry(null, null, '/home'));
+      strategy = TestLocationStrategy.fromEntry(
+          TestHistoryEntry(null, null, '/home', null));
 
-      await _strategy.simulateUserTypingUrl('/unknown');
+      await _strategy.simulateUserTypingUrl('/unknown', null);
       // This delay is necessary to wait for [BrowserHistory] because it
       // performs a `back` operation which results in a new event loop.
       await Future<void>.delayed(Duration.zero);

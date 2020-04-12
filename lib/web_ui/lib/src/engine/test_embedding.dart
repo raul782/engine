@@ -11,8 +11,9 @@ class TestHistoryEntry {
   final dynamic state;
   final String title;
   final String url;
+  final String queryParams;
 
-  const TestHistoryEntry(this.state, this.title, this.url);
+  const TestHistoryEntry(this.state, this.title, this.url, this.queryParams);
 
   @override
   String toString() {
@@ -28,7 +29,7 @@ class TestHistoryEntry {
 class TestLocationStrategy extends LocationStrategy {
   /// Creates a instance of [TestLocationStrategy] with an empty string as the
   /// path.
-  factory TestLocationStrategy() => TestLocationStrategy.fromEntry(TestHistoryEntry(null, null, ''));
+  factory TestLocationStrategy() => TestLocationStrategy.fromEntry(TestHistoryEntry(null, null, '', ''));
 
   /// Creates an instance of [TestLocationStrategy] and populates it with a list
   /// that has [initialEntry] as the only item.
@@ -36,8 +37,13 @@ class TestLocationStrategy extends LocationStrategy {
       : _currentEntryIndex = 0,
         history = <TestHistoryEntry>[initialEntry];
 
+  String getBaseHref() => "/";
+
   @override
-  String get path => currentEntry.url;
+  String hash() => currentEntry.url;
+
+  @override
+  String path() => currentEntry.url;
 
   int _currentEntryIndex;
   int get currentEntryIndex => _currentEntryIndex;
@@ -60,7 +66,7 @@ class TestLocationStrategy extends LocationStrategy {
   bool get withinAppHistory => _currentEntryIndex >= 0;
 
   @override
-  void pushState(dynamic state, String title, String url) {
+  void pushState(dynamic state, String title, String url, String queryParams) {
     assert(withinAppHistory);
     _currentEntryIndex++;
     // When pushing a new state, we need to remove all entries that exist after
@@ -69,7 +75,7 @@ class TestLocationStrategy extends LocationStrategy {
     // If the user goes A -> B -> C -> D, then goes back to B and pushes a new
     // entry called E, we should end up with: A -> B -> E in the history list.
     history.removeRange(_currentEntryIndex, history.length);
-    history.add(TestHistoryEntry(state, title, url));
+    history.add(TestHistoryEntry(state, title, url, queryParams));
 
     if (_debugLogHistoryActions) {
       print('$runtimeType.pushState(...) -> $this');
@@ -77,12 +83,12 @@ class TestLocationStrategy extends LocationStrategy {
   }
 
   @override
-  void replaceState(dynamic state, String title, String url) {
+  void replaceState(dynamic state, String title, String url, String queryParams) {
     assert(withinAppHistory);
     if (url == null || url == '') {
       url = currentEntry.url;
     }
-    currentEntry = TestHistoryEntry(state, title, url);
+    currentEntry = TestHistoryEntry(state, title, url, queryParams);
 
     if (_debugLogHistoryActions) {
       print('$runtimeType.replaceState(...) -> $this');
@@ -91,10 +97,10 @@ class TestLocationStrategy extends LocationStrategy {
 
   /// This simulates the case where a user types in a url manually. It causes
   /// a new state to be pushed, and all event listeners will be invoked.
-  Future<void> simulateUserTypingUrl(String url) {
+  Future<void> simulateUserTypingUrl(String url, String queryParams) {
     assert(withinAppHistory);
     return _nextEventLoop(() {
-      pushState(null, '', url);
+      pushState(null, '', url, queryParams);
       _firePopStateEvent();
     });
   }
@@ -112,6 +118,23 @@ class TestLocationStrategy extends LocationStrategy {
 
       if (_debugLogHistoryActions) {
         print('$runtimeType.back() -> $this');
+      }
+    });
+  }
+
+  @override
+  Future<void> forward() {
+    assert(withinAppHistory);
+    // Browsers don't move forward in history immediately. They do it at the next
+    // event loop. So let's simulate that.
+    return _nextEventLoop(() {
+      _currentEntryIndex++;
+      if (withinAppHistory) {
+        _firePopStateEvent();
+      }
+
+      if (_debugLogHistoryActions) {
+        print('$runtimeType.forward() -> $this');
       }
     });
   }
